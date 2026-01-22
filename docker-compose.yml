@@ -1,0 +1,28 @@
+services:
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+    networks:
+      - todos-network
+
+  app:
+    build: .
+    container_name: todos-app
+    ports:
+      - "8000:8000"
+    environment:
+      - NATS_URL=nats://nats:4222
+    restart: unless-stopped
+    networks:
+      - todos-network
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+networks:
+  todos-network:
+    driver: bridge
